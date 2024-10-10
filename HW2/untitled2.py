@@ -31,8 +31,12 @@ student_info = pd.DataFrame(student_info)
 student_ids = student_info['student_id']
 student_gpa = student_info['GPA']
 
-with open("student_assessment.json", 'r') as file:
-    dataDict = json.load(file)
+try:
+    with open("student_assessment.json", 'r') as file:
+        dataDict = json.load(file)
+except:    
+    with open("assessment_information.json", 'r') as file:
+        dataDict = json.load(file)
 
 #Quiz Frame
 quizDict = dict(dataDict['quiz'])
