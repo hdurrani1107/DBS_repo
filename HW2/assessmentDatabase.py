@@ -3,6 +3,7 @@ import pandas as pd
 import random
 import numpy as np
 import re
+from operator import itemgetter
 
 student_info = pd.read_csv('student_information.csv')
 student_info = student_info.sort_values(by='GPA', ascending=False)
@@ -12,14 +13,8 @@ with open("assessment_information.json", 'r') as file:
         dataDict = json.load(file)
 
 assignments = list(dataDict.keys()) 
-#print(assignments)
 
-
-# def gpaSplit(dist):
-#     distlen = dist[0]*int(len(student_info))
-#     return distlen
-
-def distribution(status, key, row, size, sorted, i):
+def distribution(status, key, row, size, sortedDists, i):
     
     ####
     ## This theoretically creates the Grades for each student, but right now its not using the multiple distributions
@@ -28,30 +23,23 @@ def distribution(status, key, row, size, sorted, i):
     ####
     weightEnrolled = dataDict[key]['completes'][0]
     weightDropped = dataDict[key]['completes'][1]
-    #distPercentages = list(map(gpaSplit, dataDict[key]['grades']))
-    #print(distPercentages)
-    
-    #print(row.name,type(row))
+    lbound = dataDict[key]['range'][0]
+    ubound = dataDict[key]['range'][1]
+
     if status == 'Enrolled':
         if random.random() < weightEnrolled:
-            if row.name < size:
-                mean_grade = sorted[i][1]
-                #print(mean_grade)
-                variance = sorted[i][2]
+                mean_grade = sortedDists[i][1]
+                variance = sortedDists[i][2]
                 grades = random.gauss(mean_grade, variance)
-            else:
-                return
+                grades = np.clip(grades, lbound, ubound)
         else:
             grades = 0
     else:
-        #complete = random.choices([True, False], weights=[dataDict[key]['completes'][1],1.0-dataDict[key]['completes'][1]], k=1)[0]
         if random.random() < weightDropped:
-            if row.name < size:
-                mean_grade = sorted[i][1]
-                variance = sorted[i][2]
+                mean_grade = sortedDists[i][1]
+                variance = sortedDists[i][2]
                 grades = random.gauss(mean_grade, variance)
-            else:
-                return
+                grades = np.clip(grades, lbound, ubound)
         else:
             grades = 0
             
@@ -64,21 +52,24 @@ def process_key(key):
     count = int(dataDict[key]['count'])
     columns = list(map(lambda x: f"{key} {x+1}", range(count)))
     frame = pd.DataFrame(index=student_info.index, columns=columns)
+    tempFrame2 = pd.DataFrame(index=student_info.index, columns=columns)
     
-    sorted = list(dataDict[key]['grades'])#.sort(key=lambda x: x[1])
-    size = 0
-    for i in range(len(sorted)):
-        size = float(sorted[i][0])*100 + size
-        print(size)
-        print(sorted[i])
-        print(sorted[i][1])
-    #frame[columns] = frame.apply(lambda x: distribution(student_info['status',x], key), axis=0)
-        for col in columns:
-            frame[col] = student_info.apply(lambda row: distribution(row['status'], key, row, size, sorted, i), axis=1)
+    dists = list(dataDict[key]['grades'])
+    sortedDists = sorted(dists, key=itemgetter(1),reverse=True)
+    size = [0,0]
+    
+    for i in range(len(sortedDists)):
+        size = [size[1],size[1] + int(float(sortedDists[i][0])*100)]
+        tempFrame = student_info.iloc[size[0]:size[1]]
 
-    #frame[col] = student_info['student_id'].apply(lambda x: x)
-    
+        for col in columns:
+            tempFrame2[col] = tempFrame.apply(lambda row: distribution(row['status'], key, row, size[1], sortedDists, i), axis=1)
+
+        frame = frame.combine_first(tempFrame2)
+        frame.set_index(student_info['student_id'])
+        
     print(frame)
+    frame.to_csv(f'{key}frame.csv')
     return key
 
 # Use map to iterate over the keys
