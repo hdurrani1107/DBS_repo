@@ -44,7 +44,7 @@ def generate_student_data(row):
     if statusOdds < float(statusList[0][0]) * 10:
         status = statusList[0][1] 
     else:
-        statusList[1][1]
+        status = statusList[1][1]
         
     return pd.Series([first_name, last_name, gpa, student_id, status])
 
