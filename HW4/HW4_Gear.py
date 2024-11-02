@@ -1,5 +1,6 @@
 #---------------------------------------
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from ipywidgets import interact, FloatSlider
@@ -49,12 +50,10 @@ def update(frame, radius_drive, radius_driven):
     
     return drive_line, driven_line
 
-
-def run_animation(radius_drive, radius_driven):
-    ani = animation.FuncAnimation(fig, update, frames=range(100), fargs=(radius_drive, radius_driven), interval=50, blit=True)
-    plt.show()
+ani = animation.FuncAnimation(fig, update, frames=range(100), fargs=(radius_drive, radius_driven), interval=50, blit=True)
 
 # Interactive sliders
-drive_slider = FloatSlider(value=0.1, min=0.05, max=0.2, step=0.01, description='Drive Gear Size:')
-driven_slider = FloatSlider(value=0.3, min=0.1, max=0.5, step=0.01, description='Driven Gear Size:')
-interact(run_animation, radius_drive=drive_slider, radius_driven=driven_slider)
+drive_slider = FloatSlider(value=radius_drive, min=0.05, max=0.2, step=0.01, description='Drive Gear Size:')
+driven_slider = FloatSlider(value=radius_driven, min=0.1, max=0.5, step=0.01, description='Driven Gear Size:')
+interact(update, frame=range(100), radius_drive=drive_slider, radius_driven=driven_slider)
+plt.show()
