@@ -5,7 +5,10 @@ THIS IS MY CHESS ENGINE THERE ARE MANY LIKE IT BUT THIS ONE IS MINE
 
 import chess
 
+chess_board = chess.board
+
 def evaluate_board():
+
     """
     Evaluates position to see who is in an advantageous position
     """
@@ -114,44 +117,108 @@ def evaluate_board():
     else:
         return -eval
 
-print("Chess Game:")
-#Work in progress: creating the actual board
-chess_board = chess.Board()
-print(chess_board)
-game = 0
+def minimax(alpha, beta, depthleft):
+    """
+    Minimax depth search algorithm, checks legal moves for best move recursively
+    """
+    bestscore = -9999
+    if (depthleft == 0):
+        return quies(alpha,beta)
+    for move in chess_board.legal_moves:
+        chess_board.push(move)
+        score = -minimax(-beta,-alpha, depthleft-1)
+        chess_board.pop()
+        if score >= beta:
+            return beta
+        if score > bestscore:
+            bestscore = score
+        if score > alpha:
+            alpha = score
+    return bestscore
+
+def quies(alpha,beta):
+    stand_pat = evaluate_board()
+    if (stand_pat >= beta):
+        return beta
+    if (alpha < stand_pat):
+        alpha = stand_pat
+    for move in chess_board.legal_moves:
+        if chess_board.is_capture:
+            chess_board.push(move)
+            score = -quies(-beta, -alpha)
+            chess_board.pop()
+            if (score >= beta):
+                return beta
+            if (score > alpha):
+                alpha = score
+    return alpha
+
+def selectmove(depth):
+    try:
+        move = chess.polyglot.MemoryMappedReader("baron30.bin").weighted_choice(chess_board).move()
+        movehistory.append(move)
+        return move
+    except:
+        bestmove = chess.Move.null()
+        bestValue = -9999
+        alpha = -100000
+        beta = 100000
+        for move in chess_board.legal_moves:
+            chess_board.push(move)
+            boardValue = -minimax(-beta,-alpha,depth-1)
+            if boardValue > bestValue:
+                bestValue = boardValue
+            if (boardValue > alpha):
+                alpha = boardValue
+            chess_board.pop()
+            movehistory.append(bestMove)
+        return bestMove
 
 
+def chess_game_play():
 
-while game != 1:
-    #Input actions white vs. black
-    print("Whites Move:")
-    white_pos = input("Input a move:")
-    white_pos = chess.Move.from_uci(white_pos)
-    chess_board.push(white_pos)
+    """
+    Function runs the actual chess game in the command prompt:
+    """
+    print("Chess Game:")
+    #Work in progress: creating the actual board
+    #Currently prints to command prompt
     print(chess_board)
-    print("Black Move:")
-    black_pos = input("Input a move:")
-    black_pos = chess.Move.from_uci(black_pos)
-    chess_board.push(black_pos)
-    print(chess_board)
-    #Advantge Evaluation
-    advantage = evaluate_board()
-    if advantage > 0:
-        print("White Advantage: ", advantage)
-    elif advantage < 0:
-        print("Black Advantage: ", advantage)
-    else:
-        print("Even Advantage")
+    chess_game = 0
 
-    #End Game Eval
-    if chess_board.is_checkmate is True:
-        game = 1
-        print("Check Mate, Game Over!")
-    elif chess_board.is_stalemate is True:
-        game = 1
-        print("Stalemate, Game Over!")
-    elif chess_board.is_insufficient_material is True:
-        game = 1
-        print("Insufficient Material, Game Over!")
-    else:
-        game = 0
+    while chess_game != 1:
+        #Input actions white vs. black
+        print("Whites Move:")
+        white_pos = input("Input a move:")
+        white_pos = chess.Move.from_uci(white_pos)
+        chess_board.push(white_pos)
+        print(chess_board)
+        print("Black Move:")
+        black_pos = input("Input a move:")
+        black_pos = chess.Move.from_uci(black_pos)
+        chess_board.push(black_pos)
+        print(chess_board)
+        #Advantge Evaluation
+        advantage = evaluate_board()
+        if advantage > 0:
+            print("White Advantage: ", advantage)
+        elif advantage < 0:
+            print("Black Advantage: ", advantage)
+        else:
+            print("Even Advantage")
+
+        #End Game Eval
+        if chess_board.is_checkmate is True:
+            chess_game = 1
+            print("Check Mate, Game Over!")
+        elif chess_board.is_stalemate is True:
+            chess_game = 1
+            print("Stalemate, Game Over!")
+        elif chess_board.is_insufficient_material is True:
+            chess_game = 1
+            print("Insufficient Material, Game Over!")
+        else:
+            Chess_game = 0
+
+if __name__ == '__main__':
+    chess_game_play()
