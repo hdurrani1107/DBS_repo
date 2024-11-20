@@ -186,6 +186,8 @@ def chess_game_play():
     """
     Function runs the actual chess game in the command prompt:
     """
+    chess_board = chess.Board()
+    movehistory =[]
     print("Chess Game:")
     #Work in progress: creating the actual board
     #Currently prints to command prompt
@@ -200,9 +202,11 @@ def chess_game_play():
         chess_board.push(white_pos)
         print(chess_board)
         print("Black Move:")
-        black_pos = input("Input a move:")
-        black_pos = chess.Move.from_uci(black_pos)
-        chess_board.push(black_pos)
+        #black_pos = input("Input a move:")
+        #black_pos = chess.Move.from_uci(black_pos)
+        #chess_board.push(black_pos)
+        move = selectmove(3)
+        chess_board.push(move)
         print(chess_board)
         #Advantge Evaluation
         advantage = evaluate_board()
@@ -230,7 +234,7 @@ def chess_game_play2():
     """
     Allows you to play against a chess engine
     """
-    engine = chess.uci.popen_engine("C:\Users\hummy\Downloads\stockfish-windows-x86-64-avx2\stockfish")
+    engine = chess.uci.popen_engine("C:\Users\hummy\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe")
     engine.uci()
     engine.name
 
@@ -259,4 +263,4 @@ def chess_game_play2():
     print(game, file=open("test.pgn", "w"), end="\n\n")
 
 if __name__ == '__main__':
-    chess_game_play2()
+    chess_game_play()
