@@ -3,9 +3,11 @@ CHESS ENGINE:
 THIS IS MY CHESS ENGINE THERE ARE MANY LIKE IT BUT THIS ONE IS MINE
 """
 
+import datetime
 import chess
-
-chess_board = chess.board
+import chess.polyglot
+import chess.pgn
+import chess.uci
 
 def evaluate_board():
 
@@ -137,6 +139,9 @@ def minimax(alpha, beta, depthleft):
     return bestscore
 
 def quies(alpha,beta):
+    """
+    Prevents Horizon effect of minimax function getting stuck and lowest depth search
+    """
     stand_pat = evaluate_board()
     if (stand_pat >= beta):
         return beta
@@ -154,6 +159,9 @@ def quies(alpha,beta):
     return alpha
 
 def selectmove(depth):
+    """
+    Puts engine together to produce optimal move includes chess books for optimal openings
+    """
     try:
         move = chess.polyglot.MemoryMappedReader("baron30.bin").weighted_choice(chess_board).move()
         movehistory.append(move)
@@ -174,9 +182,7 @@ def selectmove(depth):
             movehistory.append(bestMove)
         return bestMove
 
-
 def chess_game_play():
-
     """
     Function runs the actual chess game in the command prompt:
     """
@@ -220,5 +226,37 @@ def chess_game_play():
         else:
             Chess_game = 0
 
+def chess_game_play2():
+    """
+    Allows you to play against a chess engine
+    """
+    engine = chess.uci.popen_engine("C:\Users\hummy\Downloads\stockfish-windows-x86-64-avx2\stockfish")
+    engine.uci()
+    engine.name
+
+    movehistory =[]
+    game = chess.pgn.Game()
+    game.headers["Event"] = "Example"
+    game.headers["Site"] = "Linz"
+    game.headers["Date"] = str(datetime.datetime.now().date())
+    game.headers["Round"] = 1
+    game.headers["White"] = "MyChess"
+    game.headers["Black"] = "Stockfish9"
+    board = chess.Board()
+    while not board.is_game_over(claim_draw=True):
+        if board.turn:
+            move = selectmove(3)
+            board.push(move)       
+        else:
+            engine.position(board)
+            move = engine.go(movetime=1000).bestmove
+            movehistory.append(move)
+            board.push(move)
+        
+    game.add_line(movehistory)
+    game.headers["Result"] = str(board.result(claim_draw=True))
+    print(game)
+    print(game, file=open("test.pgn", "w"), end="\n\n")
+
 if __name__ == '__main__':
-    chess_game_play()
+    chess_game_play2()
