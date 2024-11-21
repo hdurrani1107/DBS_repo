@@ -7,14 +7,13 @@ import datetime
 import chess
 import chess.polyglot
 import chess.pgn
-import chess.uci
+#import chess.uci
 
-def evaluate_board():
+def evaluate_board(chess_board):
 
     """
     Evaluates position to see who is in an advantageous position
     """
-        
     pawntable = [
     0,  0,  0,  0,  0,  0,  0,  0,
     5, 10, 10,-20,-20, 10, 10,  5,
@@ -119,16 +118,16 @@ def evaluate_board():
     else:
         return -eval
 
-def minimax(alpha, beta, depthleft):
+def minimax(alpha, beta, depthleft,chess_board):
     """
     Minimax depth search algorithm, checks legal moves for best move recursively
     """
     bestscore = -9999
     if (depthleft == 0):
-        return quies(alpha,beta)
+        return quies(alpha,beta,chess_board)
     for move in chess_board.legal_moves:
         chess_board.push(move)
-        score = -minimax(-beta,-alpha, depthleft-1)
+        score = -minimax(-beta,-alpha, depthleft-1,chess_board)
         chess_board.pop()
         if score >= beta:
             return beta
@@ -138,11 +137,11 @@ def minimax(alpha, beta, depthleft):
             alpha = score
     return bestscore
 
-def quies(alpha,beta):
+def quies(alpha,beta, chess_board):
     """
     Prevents Horizon effect of minimax function getting stuck and lowest depth search
-    """
-    stand_pat = evaluate_board()
+    """ 
+    stand_pat = evaluate_board(chess_board)
     if (stand_pat >= beta):
         return beta
     if (alpha < stand_pat):
@@ -150,7 +149,7 @@ def quies(alpha,beta):
     for move in chess_board.legal_moves:
         if chess_board.is_capture:
             chess_board.push(move)
-            score = -quies(-beta, -alpha)
+            score = -quies(-beta, -alpha,chess_board)
             chess_board.pop()
             if (score >= beta):
                 return beta
@@ -158,12 +157,12 @@ def quies(alpha,beta):
                 alpha = score
     return alpha
 
-def selectmove(depth):
+def selectmove(depth, movehistory, chess_board):
     """
     Puts engine together to produce optimal move includes chess books for optimal openings
-    """
+    """ 
     try:
-        move = chess.polyglot.MemoryMappedReader("baron30.bin").weighted_choice(chess_board).move()
+        move = chess.polyglot.MemoryMappedReader("Chess Engine\\baron30.bin").weighted_choice(chess_board)
         movehistory.append(move)
         return move
     except:
@@ -173,7 +172,7 @@ def selectmove(depth):
         beta = 100000
         for move in chess_board.legal_moves:
             chess_board.push(move)
-            boardValue = -minimax(-beta,-alpha,depth-1)
+            boardValue = -minimax(-beta,-alpha,depth-1,chess_board)
             if boardValue > bestValue:
                 bestValue = boardValue
             if (boardValue > alpha):
@@ -205,11 +204,12 @@ def chess_game_play():
         #black_pos = input("Input a move:")
         #black_pos = chess.Move.from_uci(black_pos)
         #chess_board.push(black_pos)
-        move = selectmove(3)
-        chess_board.push(move)
+        move = selectmove(3, movehistory, chess_board)
+        print(move)
+        chess_board.push(move.move)
         print(chess_board)
         #Advantge Evaluation
-        advantage = evaluate_board()
+        advantage = evaluate_board(chess_board)
         if advantage > 0:
             print("White Advantage: ", advantage)
         elif advantage < 0:
@@ -228,15 +228,15 @@ def chess_game_play():
             chess_game = 1
             print("Insufficient Material, Game Over!")
         else:
-            Chess_game = 0
+            chess_game = 0
 
 def chess_game_play2():
     """
     Allows you to play against a chess engine
     """
-    engine = chess.uci.popen_engine("C:\Users\hummy\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe")
-    engine.uci()
-    engine.name
+    #engine = chess.uci.popen_engine("C:\Users\hummy\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe")
+    #engine.uci()
+    #engine.name
 
     movehistory =[]
     game = chess.pgn.Game()
