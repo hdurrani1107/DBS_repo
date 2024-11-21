@@ -126,6 +126,7 @@ def minimax(alpha, beta, depthleft,chess_board):
     if (depthleft == 0):
         return quies(alpha,beta,chess_board)
     for move in chess_board.legal_moves:
+        #print(move)
         chess_board.push(move)
         score = -minimax(-beta,-alpha, depthleft-1,chess_board)
         chess_board.pop()
@@ -147,6 +148,7 @@ def quies(alpha,beta, chess_board):
     if (alpha < stand_pat):
         alpha = stand_pat
     for move in chess_board.legal_moves:
+        #print(move)
         if chess_board.is_capture:
             chess_board.push(move)
             score = -quies(-beta, -alpha,chess_board)
@@ -204,7 +206,7 @@ def chess_game_play():
         #black_pos = input("Input a move:")
         #black_pos = chess.Move.from_uci(black_pos)
         #chess_board.push(black_pos)
-        move = selectmove(3, movehistory, chess_board)
+        move = selectmove(1, movehistory, chess_board)
         print(move)
         chess_board.push(move.move)
         print(chess_board)
