@@ -130,7 +130,7 @@ def minimax(alpha, beta, depthleft,chess_board):
     moves = list(chess_board.legal_moves)
     moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
     
-    for move in chess_board.legal_moves:
+    for move in moves:
         #print(move)
         chess_board.push(move)
         score = -minimax(-beta,-alpha, depthleft-1,chess_board)
@@ -159,7 +159,10 @@ def quies(alpha,beta, chess_board):
     if alpha < stand_pat:
         alpha = stand_pat
     
-    for move in chess_board.legal_moves:
+    moves = list(chess_board.legal_moves)
+    moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+    
+    for move in moves:
         #print(move)
         if chess_board.is_capture:
             chess_board.push(move)
@@ -313,15 +316,17 @@ def chess_game_play2():
     print(game, file=open("test.pgn", "w"), end="\n\n")
 
 def chess_game_play3():
+    """
+    End Game Game Play
+    """
     chess_board = chess.Board("3N4/1n4QP/8/qp6/P2B2p1/1p5P/1pkN1K2/6R1 w - - 0 1")
     movehistory =[]
     print("Chess Game:")
     #Work in progress: creating the actual board
     #Currently prints to command prompt
     print(chess_board)
-    chess_game = 0
 
-    while chess_game != 1:
+    while not chess_board.is_game_over(claim_draw=True):
         #Input actions white vs. black
         print("Whites Move:")
         white_pos = input("Input a move:") 
@@ -331,7 +336,7 @@ def chess_game_play3():
 
         print("Black Move (thinking...)")
         start_time = datetime.datetime.now()
-        move = selectmove(1, movehistory, chess_board)
+        move = selectmove(3, movehistory, chess_board)
         end_time = datetime.datetime.now()
         print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
         
@@ -347,19 +352,7 @@ def chess_game_play3():
             print("Black Advantage: ", advantage)
         else:
             print("Even Advantage")
-
-        #End Game Eval
-        if chess_board.is_checkmate is True:
-            chess_game = 1
-            print("Check Mate, Game Over!")
-        elif chess_board.is_stalemate is True:
-            chess_game = 1
-            print("Stalemate, Game Over!")
-        elif chess_board.is_insufficient_material is True:
-            chess_game = 1
-            print("Insufficient Material, Game Over!")
-        else:
-            chess_game = 0
+        
 
 if __name__ == '__main__':
     chess_game_play3()
