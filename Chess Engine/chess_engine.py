@@ -125,6 +125,11 @@ def minimax(alpha, beta, depthleft,chess_board):
     bestscore = -9999
     if (depthleft == 0):
         return quies(alpha,beta,chess_board)
+    
+    # Sort moves to improve pruning efficiency
+    moves = list(chess_board.legal_moves)
+    moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+    
     for move in chess_board.legal_moves:
         #print(move)
         chess_board.push(move)
@@ -143,10 +148,17 @@ def quies(alpha,beta, chess_board):
     Prevents Horizon effect of minimax function getting stuck and lowest depth search
     """ 
     stand_pat = evaluate_board(chess_board)
-    if (stand_pat >= beta):
+    if stand_pat >= beta:
         return beta
-    if (alpha < stand_pat):
+    
+    # Delta pruning
+    DELTA = 900  # Value of a queen
+    if stand_pat < alpha - DELTA:
+        return alpha
+        
+    if alpha < stand_pat:
         alpha = stand_pat
+    
     for move in chess_board.legal_moves:
         #print(move)
         if chess_board.is_capture:
@@ -158,6 +170,35 @@ def quies(alpha,beta, chess_board):
             if (score > alpha):
                 alpha = score
     return alpha
+
+def rate_move(move, chess_board):
+    """
+    Rate moves for ordering (MVV-LVA heuristic)
+    """
+    if chess_board.is_capture(move):
+        # MVV-LVA (Most Valuable Victim - Least Valuable Attacker)
+        piece_values = {
+            chess.PAWN: 100,
+            chess.KNIGHT: 320,
+            chess.BISHOP: 330,
+            chess.ROOK: 500,
+            chess.QUEEN: 900,
+            chess.KING: 20000
+        }
+        
+        victim = chess_board.piece_type_at(move.to_square)
+        attacker = chess_board.piece_type_at(move.from_square)
+        
+        if victim and attacker:
+            return piece_values[victim] - piece_values[attacker]/100
+    
+    # Prioritize checks and promotions
+    if chess_board.gives_check(move):
+        return 50
+    if move.promotion:
+        return 800
+        
+    return 0
 
 def selectmove(depth, movehistory, chess_board):
     """
@@ -172,16 +213,23 @@ def selectmove(depth, movehistory, chess_board):
         bestValue = -9999
         alpha = -100000
         beta = 100000
-        for move in chess_board.legal_moves:
+        # Sort moves to improve alpha-beta pruning efficiency
+        moves = list(chess_board.legal_moves)
+        moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+        
+        for move in moves:
             chess_board.push(move)
-            boardValue = -minimax(-beta,-alpha,depth-1,chess_board)
+            boardValue = -minimax(-beta, -alpha, depth-1, chess_board)
+            chess_board.pop()
+            
             if boardValue > bestValue:
                 bestValue = boardValue
-            if (boardValue > alpha):
+                bestmove = move  # This was missing in your original code
+            if boardValue > alpha:
                 alpha = boardValue
-            chess_board.pop()
-            movehistory.append(bestMove)
-        return bestMove
+                
+        movehistory.append(bestmove)
+        return bestmove
 
 def chess_game_play():
     """
@@ -264,5 +312,54 @@ def chess_game_play2():
     print(game)
     print(game, file=open("test.pgn", "w"), end="\n\n")
 
+def chess_game_play3():
+    chess_board = chess.Board("3N4/1n4QP/8/qp6/P2B2p1/1p5P/1pkN1K2/6R1 w - - 0 1")
+    movehistory =[]
+    print("Chess Game:")
+    #Work in progress: creating the actual board
+    #Currently prints to command prompt
+    print(chess_board)
+    chess_game = 0
+
+    while chess_game != 1:
+        #Input actions white vs. black
+        print("Whites Move:")
+        white_pos = input("Input a move:") 
+        white_pos = chess.Move.from_uci(white_pos)
+        chess_board.push(white_pos)
+        print(chess_board)
+
+        print("Black Move (thinking...)")
+        start_time = datetime.datetime.now()
+        move = selectmove(1, movehistory, chess_board)
+        end_time = datetime.datetime.now()
+        print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
+        
+        if move:
+            chess_board.push(move)
+        print(chess_board)
+        
+        #Advantge Evaluation
+        advantage = evaluate_board(chess_board)
+        if advantage > 0:
+            print("White Advantage: ", advantage)
+        elif advantage < 0:
+            print("Black Advantage: ", advantage)
+        else:
+            print("Even Advantage")
+
+        #End Game Eval
+        if chess_board.is_checkmate is True:
+            chess_game = 1
+            print("Check Mate, Game Over!")
+        elif chess_board.is_stalemate is True:
+            chess_game = 1
+            print("Stalemate, Game Over!")
+        elif chess_board.is_insufficient_material is True:
+            chess_game = 1
+            print("Insufficient Material, Game Over!")
+        else:
+            chess_game = 0
+
 if __name__ == '__main__':
-    chess_game_play()
+    chess_game_play3()
