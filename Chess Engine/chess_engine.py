@@ -258,12 +258,12 @@ def chess_game_play_white():
 
             print("Black Move (thinking...)")
             start_time = datetime.datetime.now()
-            move = selectmove(3, movehistory, chess_board)
+            black_pos = selectmove(3, movehistory, chess_board)
             end_time = datetime.datetime.now()
             print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
             
-            if move:
-                chess_board.push(move)
+            if black_pos:
+                chess_board.push(black_pos.move)
             print(chess_board)
             
             #Advantge Evaluation
@@ -290,18 +290,18 @@ def chess_game_play_black():
             #Input actions white vs. black
             print("White Move (thinking...)")
             start_time = datetime.datetime.now()
-            move = selectmove(3, movehistory, chess_board)
+            white_pos = selectmove(3, movehistory, chess_board)
             end_time = datetime.datetime.now()
             print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
             
-            if move:
-                chess_board.push(move)
+            if white_pos:
+                chess_board.push(white_pos.move)
             print(chess_board)
 
             print("Input Black Move:")
-            white_pos = input("Input a move:") 
-            white_pos = chess.Move.from_uci(white_pos)
-            chess_board.push(white_pos)
+            black_pos = input("Input a move:") 
+            black_pos = chess.Move.from_uci(black_pos)
+            chess_board.push(black_pos)
             print(chess_board)
             
             #Advantge Evaluation
