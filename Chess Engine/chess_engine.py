@@ -129,8 +129,9 @@ def minimax(alpha, beta, depthleft,chess_board):
     # Sort moves to improve pruning efficiency
     moves = list(chess_board.legal_moves)
     moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+    optimal_moves = moves[:20]
     
-    for move in moves:
+    for move in optimal_moves:
         #print(move)
         chess_board.push(move)
         score = -minimax(-beta,-alpha, depthleft-1,chess_board)
@@ -161,8 +162,9 @@ def quies(alpha,beta, chess_board):
     
     moves = list(chess_board.legal_moves)
     moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+    optimal_moves = moves[:20]
     
-    for move in moves:
+    for move in optimal_moves:
         #print(move)
         if chess_board.is_capture:
             chess_board.push(move)
@@ -219,8 +221,9 @@ def selectmove(depth, movehistory, chess_board):
         # Sort moves to improve alpha-beta pruning efficiency
         moves = list(chess_board.legal_moves)
         moves.sort(key=lambda m: rate_move(m, chess_board), reverse=True)
+        optimal_moves = moves[:20]
         
-        for move in moves:
+        for move in optimal_moves:
             chess_board.push(move)
             boardValue = -minimax(-beta, -alpha, depth-1, chess_board)
             chess_board.pop()
@@ -234,7 +237,7 @@ def selectmove(depth, movehistory, chess_board):
         movehistory.append(bestmove)
         return bestmove
 
-def chess_game_play():
+def chess_game_play_white():
     """
     Function runs the actual chess game in the command prompt:
     """
@@ -244,44 +247,71 @@ def chess_game_play():
     #Work in progress: creating the actual board
     #Currently prints to command prompt
     print(chess_board)
-    chess_game = 0
 
-    while chess_game != 1:
-        #Input actions white vs. black
-        print("Whites Move:")
-        white_pos = input("Input a move:")
-        white_pos = chess.Move.from_uci(white_pos)
-        chess_board.push(white_pos)
-        print(chess_board)
-        print("Black Move:")
-        #black_pos = input("Input a move:")
-        #black_pos = chess.Move.from_uci(black_pos)
-        #chess_board.push(black_pos)
-        move = selectmove(1, movehistory, chess_board)
-        print(move)
-        chess_board.push(move.move)
-        print(chess_board)
-        #Advantge Evaluation
-        advantage = evaluate_board(chess_board)
-        if advantage > 0:
-            print("White Advantage: ", advantage)
-        elif advantage < 0:
-            print("Black Advantage: ", advantage)
-        else:
-            print("Even Advantage")
+    while not chess_board.is_game_over(claim_draw=True):
+            #Input actions white vs. black
+            print("Whites Move:")
+            white_pos = input("Input a move:") 
+            white_pos = chess.Move.from_uci(white_pos)
+            chess_board.push(white_pos)
+            print(chess_board)
 
-        #End Game Eval
-        if chess_board.is_checkmate is True:
-            chess_game = 1
-            print("Check Mate, Game Over!")
-        elif chess_board.is_stalemate is True:
-            chess_game = 1
-            print("Stalemate, Game Over!")
-        elif chess_board.is_insufficient_material is True:
-            chess_game = 1
-            print("Insufficient Material, Game Over!")
-        else:
-            chess_game = 0
+            print("Black Move (thinking...)")
+            start_time = datetime.datetime.now()
+            move = selectmove(3, movehistory, chess_board)
+            end_time = datetime.datetime.now()
+            print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
+            
+            if move:
+                chess_board.push(move)
+            print(chess_board)
+            
+            #Advantge Evaluation
+            advantage = evaluate_board(chess_board)
+            if advantage > 0:
+                print("White Advantage: ", advantage)
+            elif advantage < 0:
+                print("Black Advantage: ", advantage)
+            else:
+                print("Even Advantage")
+
+def chess_game_play_black():
+    """
+    Function runs the actual chess game in the command prompt:
+    """
+    chess_board = chess.Board()
+    movehistory =[]
+    print("Chess Game:")
+    #Work in progress: creating the actual board
+    #Currently prints to command prompt
+    print(chess_board)
+
+    while not chess_board.is_game_over(claim_draw=True):
+            #Input actions white vs. black
+            print("White Move (thinking...)")
+            start_time = datetime.datetime.now()
+            move = selectmove(3, movehistory, chess_board)
+            end_time = datetime.datetime.now()
+            print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
+            
+            if move:
+                chess_board.push(move)
+            print(chess_board)
+
+            print("Input Black Move:")
+            white_pos = input("Input a move:") 
+            white_pos = chess.Move.from_uci(white_pos)
+            chess_board.push(white_pos)
+            print(chess_board)
+            
+            #Advantge Evaluation
+            advantage = evaluate_board(chess_board)
+            if advantage > 0:
+                print("White Advantage: ", advantage)
+            elif advantage < 0:
+                print("Black Advantage: ", advantage)
+            else:
+                print("Even Advantage")
 
 def chess_game_play2():
     """
@@ -336,7 +366,7 @@ def chess_game_play3():
 
         print("Black Move (thinking...)")
         start_time = datetime.datetime.now()
-        move = selectmove(3, movehistory, chess_board)
+        move = selectmove(5, movehistory, chess_board)
         end_time = datetime.datetime.now()
         print(f"Move calculated in: {(end_time - start_time).total_seconds()} seconds")
         
@@ -353,6 +383,13 @@ def chess_game_play3():
         else:
             print("Even Advantage")
         
-
 if __name__ == '__main__':
-    chess_game_play3()
+    print("RuffFish Chess Engine: Chess engine to beat your opponent")
+    side_selection = input("Select your opponents side: white or black?")
+    if side_selection == "white":
+        chess_game_play_white()
+    elif side_selection == 'black':
+        chess_game_play_black()
+    else:
+        print("Test Chess Engine")
+        chess_game_play3
