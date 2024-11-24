@@ -385,7 +385,7 @@ def chess_game_play3():
             print("Even Advantage")
         
 if __name__ == '__main__':
-    print("RuffFish Chess Engine: Chess engine to beat your opponent")
+    print("CarruthersFish Chess Engine: Chess engine to beat your opponent")
     side_selection = input("Select your opponents side: white or black?")
     if side_selection == "white":
         chess_game_play_white()
@@ -393,4 +393,4 @@ if __name__ == '__main__':
         chess_game_play_black()
     else:
         print("Test Chess Engine")
-        chess_game_play3
+        chess_game_play3()
