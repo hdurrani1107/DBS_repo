@@ -1,6 +1,6 @@
 # DBS_repo
 Design by Software - Repository
-Authors: Stephan BSchieder, Humzah Durrani, and Tianji 
+Authors: Stephan BSchieder, Humzah Durrani, and Tianji Sun
 
 Projects in order:
 1. HW1
